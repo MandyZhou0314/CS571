@@ -1,0 +1,33 @@
+table, th, td {
+  border: 1px solid;
+}
+
+.job-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.job-option input[type='radio'] {
+  margin-right: 10px;
+}
+
+.job-description {
+  margin-left: 10px;
+}
+
+.large-text-wrap {
+  inline-size: 500px; 
+}
+
+.primary-button {
+  background-color: orange;
+  border: 0cm;
+  padding: 0.2cm
+}
+
+.secondary-button {
+  background-color: rgb(234, 232, 232);
+  border: 0cm;
+  padding: 0.2cm
+}
