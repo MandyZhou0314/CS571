@@ -26,7 +26,7 @@ Today's sale is Molasses for $3.99, which can only be asked for at the service d
 
 Not sure what your Badger ID is? Search your email for `CS571 S25 New Badger ID` sent by `ctnelson2@wisc.edu`.
 
-Never received a Badger ID? [You can self-issue one here.](https://cs571api.cs.wisc.edu/ui/auth) *Please note that it may take **up to a minute** for a new Badger ID to begin working!*
+Never received a Badger ID? [You can self-issue one here.](https://cs571.org/ui/auth) *Please note that it may take **up to a minute** for a new Badger ID to begin working!*
 
 Need to change your Badger ID? There's a cheat code for that! Press `Enter` `Enter` `Up Arrow` `Up Arrow` `Down Arrow` `Down Arrow` within the BadgerMart webpage to delete your Badger ID, then refresh the page. Alternatively, you can delete your session and local storage from your browser settings.
 
