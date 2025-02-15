@@ -23,7 +23,6 @@ export default function BadgerBudSummary(props) {
 
     return <Col xs={12} sm={12} md={6} lg={4} xl={3} key={props.id}>
         <Card style={{ margin: "auto", marginTop: "1rem", maxWidth: "30rem" }}>
-            <h4>{props.name}</h4>
             {
                 displayStatus ?
                     <img style={{ aspectRatio: "1 / 1" }} src={imgUrls[0]} alt={`A picture of ${props.name}`} /> :
@@ -46,7 +45,7 @@ export default function BadgerBudSummary(props) {
                         <p>{props.description}</p>
                     </>
             }
-
+            <h4>{props.name}</h4>
             <Button variant="primary" onClick={showAndHide}> {displayStatus ? "Show More" : "Show Less"}</Button>
             <Button variant="secondary" onClick={save}>Save</Button>
         </Card>
