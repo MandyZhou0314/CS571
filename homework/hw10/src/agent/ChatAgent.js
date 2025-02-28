@@ -16,8 +16,9 @@ const createChatAgent = () => {
         availableItems = await resp.json();
         for (let item of availableItems) {
             priceMap[item.name] = item.price
+            // a must initialization for step 9
+            cart[item.name] = 0
         }
-        console.log(priceMap)
         return "Welcome to BadgerMart Voice!:) Type your question, or ask for help if you're lost!"
     }
 
@@ -36,25 +37,52 @@ const createChatAgent = () => {
                 case "add_item": return addItem(data);
                 case "remove_item": return removeItem(data);
                 case "view_cart": return viewCart();
+                case "checkout": return checkout();
             }
         }
         return "I'm sorry, I don't understand!"
     }
 
-    const viewCart = async () => {
-        if (Object.keys(cart).length === 0) {
-            return "Your cart is empty now."
-        } else {
-            let cartItemList = []
-            let totalCost = 0
-            for (const [key, value] of Object.entries(cart)) {
-                let keyValuePair = value + " " + key.toLowerCase()
-                cartItemList.push(keyValuePair)
-                totalCost += value * priceMap[key]
-            }
-            let listString = listToString(cartItemList)
-            return `You have ${listString} in your cart, totalling $${totalCost}`
+    const getItems = async () => {
+        let itemList = []
+        for (let availableItem of availableItems) {
+            itemList.push(availableItem.name.toLowerCase())
         }
+        return `We have ${listToString(itemList)} for sale!`
+    }
+
+    const getHelp = async () => {
+        return "In BadgerMart Voice, you can get the list of items, the price of an item, add or remove an item from your cart, and checkout!"
+    }
+
+    const getPrice = async (promptData) => {
+        const hasSpecificItem = promptData.entities["specific_item_price:specific_item_price"] ? true : false;
+        const specificItem = hasSpecificItem ? promptData.entities["specific_item_price:specific_item_price"][0].value : null;
+
+        for (let item of availableItems) {
+            if (specificItem === item.name) {
+                return `${specificItem} cost $${priceMap[specificItem]} each.`
+            }
+        } return "This item is not in stock!";
+    }
+
+    const addItem = async (promptData) => {
+        const hasAddItem = promptData.entities["specific_item_price:specific_item_price"] ? true : false;
+        const hasSpecificNum = promptData.entities["wit$number:number"] ? true : false;
+
+        const addItem = hasAddItem ? promptData.entities["specific_item_price:specific_item_price"][0].value : null;
+        const numItems = hasSpecificNum ? promptData.entities["wit$number:number"][0].value : 1;
+
+        for (let item of availableItems) {
+            if (addItem === item.name) {
+                if (numItems === 0 || numItems < 1) {
+                    addResponse = 'This quantity is invalid.'
+                } else {
+                    cart[addItem] += Math.floor(numItems);
+                    return `Sure, adding ${Math.floor(numItems)} ${addItem.toLowerCase()}(s) to your cart.`
+                }
+            }
+        } return "This item is not in stock!";
     }
 
     const removeItem = async (promptData) => {
@@ -84,51 +112,42 @@ const createChatAgent = () => {
         return removeResponse;
     }
 
-    const addItem = async (promptData) => {
-        const hasAddItem = promptData.entities["specific_item_price:specific_item_price"] ? true : false;
-        const hasSpecificNum = promptData.entities["wit$number:number"] ? true : false;
 
-        const addItem = hasAddItem ? promptData.entities["specific_item_price:specific_item_price"][0].value : null;
-        const numItems = hasSpecificNum ? promptData.entities["wit$number:number"][0].value : 1;
 
-        let addResponse = "This item is not in stock!"
-        for (let item of availableItems) {
-            if (addItem === item.name) {
-                if (numItems === 0 || numItems < 1) {
-                    addResponse = 'This quantity is invalid.'
-                } else {
-                    cart[addItem] = Math.floor(numItems);
-                    addResponse = `Sure, adding ${Math.floor(numItems)} ${addItem.toLowerCase()}(s) to your cart.`
-                }
-                break;
+    const viewCart = async () => {
+        if (Object.keys(cart).length === 0) {
+            return "Your cart is empty now."
+        } else {
+            let cartItemList = []
+            let totalCost = 0
+            for (const [key, value] of Object.entries(cart)) {
+                let keyValuePair = value + " " + key.toLowerCase()
+                cartItemList.push(keyValuePair)
+                totalCost += value * priceMap[key]
             }
-        } return addResponse;
-    }
-
-    // use priceMap
-    const getPrice = async (promptData) => {
-        const hasSpecificItem = promptData.entities["specific_item_price:specific_item_price"] ? true : false;
-        const specificItem = hasSpecificItem ? promptData.entities["specific_item_price:specific_item_price"][0].value : null;
-
-        let priceResponse = "This item is not in stock!"
-        for (let item of availableItems) {
-            if (specificItem === item.name) {
-                let specificPrice = item.price
-                priceResponse = `${specificItem} cost $${specificPrice} each.`
-            }
-        } return priceResponse;
-    }
-
-    const getHelp = async () => {
-        return "In BadgerMart Voice, you can get the list of items, the price of an item, add or remove an item from your cart, and checkout!"
-    }
-
-    const getItems = async () => {
-        let itemList = []
-        for (let availableItem of availableItems) {
-            itemList.push(availableItem.name.toLowerCase())
+            let listString = listToString(cartItemList)
+            return `You have ${listString} in your cart, totalling $${totalCost}`
         }
-        return `We have ${listToString(itemList)} for sale!`
+    }
+
+    const checkout = async () => {
+        const resp = await fetch("https://cs571.org/rest/f24/hw10/checkout", {
+            method: "POST",
+            headers: {
+                "X-CS571-ID": CS571.getBadgerId(),
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(
+                cart,
+            )
+        })
+        const data = await resp.json();
+        if (data.confirmationId) {
+            cart = {};
+            return `Success! Your confirmation ID is ${data.confirmationId}`
+        } else {
+            alert("Error!")
+        }
     }
 
     // helper method of getItems to convert items list to available items string
