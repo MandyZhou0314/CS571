@@ -1,4 +1,5 @@
 import { isLoggedIn, ofRandom } from "../Util";
+import AIEmoteType from '../../components/chat/messages/AIEmoteType';
 
 const createRegisterSubAgent = (end) => {
 
@@ -31,10 +32,13 @@ const createRegisterSubAgent = (end) => {
     const handleUsername = async (prompt) => {
         username = prompt;
         stage = "FOLLOWUP_PASSWORD";
-        return ofRandom([
-            "Thank you, what pin would you like to use? This must be 7 digits.",
-            "Alright, what is your password? This must be 7 digits."
-        ])
+        return {
+            nextIsSensitive: true,
+            msg: ofRandom([
+                "Thank you, what pin would you like to use? This must be 7 digits.",
+                "Alright, what is your password? This must be 7 digits."
+            ])
+        }
     }
 
     const handlePassword = async (prompt) => {
@@ -43,18 +47,21 @@ const createRegisterSubAgent = (end) => {
             return "Your pin must be a 7-digit number!"
         }
         stage = "FOLLOWUP_PASSWORDCONFIM";
-        return ofRandom([
-            "Finally, please confirm your password.",
-            "Great, please confirm your pin."
-        ])
+        return {
+            nextIsSensitive: true,
+            msg: ofRandom([
+                "Finally, please confirm your password.",
+                "Great, please confirm your pin."
+            ])
+        }
     }
 
     const handlePasswordConfirm = async (prompt) => {
         passwordConfirm = prompt;
         if (passwordConfirm !== password) {
-            return "Your pins do not match!"
+            return end({ emote: AIEmoteType.ERROR, msg: "Your pins do not match!" })
         } else if (passwordConfirm.length !== 7) {
-            return "Your pin must be a 7-digit number!"
+            return end({ emote: AIEmoteType.ERROR, msg: "Your pin must be a 7-digit number!" })
         }
         const resp = await fetch("https://cs571.org/rest/f24/hw11/register", {
             method: "POST",
@@ -70,15 +77,23 @@ const createRegisterSubAgent = (end) => {
         })
 
         if (resp.status === 200) {
-            return end(ofRandom([
-                `Successfully signed up, ${username}!`,
-                `Success! Welcome to BadgerChat, ${username}.`
-            ]))
+            return end(
+                {
+                    emote: AIEmoteType.SUCCESS,
+                    msg: ofRandom([
+                        `Successfully signed up, ${username}!`,
+                        `Success! Welcome to BadgerChat, ${username}.`
+                    ])
+                })
         } else if (resp.status === 409) {
-            return end(ofRandom([
-                "Sorry, that username has already been taken!",
-                "Sorry, the user already exists, please try another usename."
-            ]))
+            return end(
+                {
+                    emote: AIEmoteType.ERROR,
+                    msg: ofRandom([
+                        "Sorry, that username has already been taken!",
+                        "Sorry, the user already exists, please try another usename."
+                    ])
+                })
         } else {
             "Error!"
         }

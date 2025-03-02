@@ -80,7 +80,7 @@ const createChatAgent = () => {
     }
 
     const handleCreateMessage = async (data) => {
-        return await delegator.beginDelegation("CREATE");
+        return await delegator.beginDelegation("CREATE", data);
     }
 
     const handleLogout = async () => {

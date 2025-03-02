@@ -1,4 +1,5 @@
-import { isLoggedIn, ofRandom } from "../Util"
+import { isLoggedIn, ofRandom } from "../Util";
+import AIEmoteType from '../../components/chat/messages/AIEmoteType';
 
 const createLoginSubAgent = (end) => {
 
@@ -8,10 +9,10 @@ const createLoginSubAgent = (end) => {
 
     const handleInitialize = async (promptData) => {
         if (await isLoggedIn()) {
-            return end(ofRandom)([
+            return end(ofRandom([
                 "You are already logged in, try logging out first.",
                 "You are already signed in, try signing out first."
-            ])
+            ]))
         } else {
             stage = "FOLLOWUP_USERNAME";
             return ofRandom([
@@ -23,7 +24,7 @@ const createLoginSubAgent = (end) => {
     }
 
     const handleReceive = async (prompt) => {
-        switch(stage) {
+        switch (stage) {
             case "FOLLOWUP_USERNAME": return await handleUsername(prompt);
             case "FOLLOWUP_PASSWORD": return await handlePassword(prompt);
         }
@@ -32,11 +33,13 @@ const createLoginSubAgent = (end) => {
     const handleUsername = async (prompt) => {
         username = prompt;
         stage = "FOLLOWUP_PASSWORD";
-        return ofRandom([
-            "Sure, what is your password?",
-            "Alright, what is your password?",
-            "Great, what is your password?"
-        ])
+        return {
+            nextIsSensitive: true,
+            msg: ofRandom([
+                "Sure, what is your password?",
+                "Alright, what is your password?",
+                "Great, what is your password?"])
+        }
     }
 
     const handlePassword = async (prompt) => {
@@ -56,15 +59,24 @@ const createLoginSubAgent = (end) => {
 
         if (resp.status === 200) {
             isLoggedIn();
-            return end(ofRandom([
-                "Successfully logged in!",
-                "Success! You have been logged in."
-            ]))
+            return end(
+                {
+                    emote: AIEmoteType.SUCCESS,
+                    msg: ofRandom([
+                        "Successfully logged in!",
+                        "Success! You have been logged in."])
+                }
+
+            )
         } else {
-            return end(ofRandom([
-                "Sorry, that username and password is incorrect.",
-                "Sorry, your username or password is incorrect."
-            ]))
+            return end(
+                {
+                    emote: AIEmoteType.ERROR,
+                    msg: ofRandom([
+                        "Sorry, that username and password is incorrect.",
+                        "Sorry, your username or password is incorrect."])
+                }
+            )
         }
     }
 
